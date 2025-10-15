@@ -22,7 +22,7 @@ export type SubmitKeysArg<T> = readonly (keyof T)[] | undefined;
 export type SubmitPayload<T, K extends SubmitKeysArg<T>> =
   K extends readonly (keyof T)[] ? Pick<T, K[number]> : T;
 export interface Submit<T extends FieldValues = FieldValues,
-  K extends SubmitKeysArg<T> = undefined> {
+  K extends SubmitKeysArg<T> = SubmitKeysArg<T>> {
   onSuccess?: (values: T) => any;
   onError?: (err: Error) => void;
   values?: K;
