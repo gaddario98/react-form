@@ -1,6 +1,6 @@
 {
   "name": "@gaddario98/react-form",
-  "version": "1.0.20",
+  "version": "1.0.23",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -27,6 +27,7 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "@gaddario98/react-localization": "^1.0.18",
     "@gaddario98/utiles": "^1.0.15",
     "i18next": "^25.5.3",
     "react-hook-form": "^7.64.0",

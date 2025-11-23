@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, JSX, useCallback, useEffect, useMemo, useRef } from "react";
+import { JSX, useCallback, useEffect, useMemo, useRef } from "react";
 import {
   Control,
   ControllerFieldState,
@@ -29,20 +29,18 @@ export interface FormElements {
   renderInHeader: boolean;
 }
 
-type SubmitKeys<
-  T extends FieldValues,
-  S extends Submit<T, SubmitKeysArg<T>>
-> = S extends Submit<T, infer K>
-  ? K extends readonly (keyof T)[] 
-    ? K[number] extends keyof T 
-      ? K[number] 
+type SubmitKeys<T extends FieldValues, S extends Submit<T, SubmitKeysArg<T>>> =
+  S extends Submit<T, infer K>
+    ? K extends readonly (keyof T)[]
+      ? K[number] extends keyof T
+        ? K[number]
+        : keyof T
       : keyof T
-    : keyof T
-  : keyof T;
+    : keyof T;
 
 type PayloadOf<
   T extends FieldValues,
-  S extends Submit<T, SubmitKeysArg<T>>
+  S extends Submit<T, SubmitKeysArg<T>>,
 > = SubmitPayload<T, S extends Submit<T, infer K> ? K : undefined>;
 
 const RenderField = withMemo(
@@ -73,12 +71,12 @@ const RenderField = withMemo(
         onFieldChange={onFieldChange}
       />
     );
-  },
-  (prev, next) => 
+  }
+  /*(prev, next) => 
     prev.field.name === next.field.name &&
     prev.field.value === next.field.value &&
     prev.fieldState.error?.message === next.fieldState.error?.message &&
-    prev.fieldProps.name === next.fieldProps.name
+    prev.fieldProps.name === next.fieldProps.name*/
 );
 
 const ControllerWrapper = withMemo(
@@ -116,8 +114,7 @@ export const useFormManager = <T extends FieldValues = FieldValues>({
   onValuesChange,
   globalErrorNs,
 }: UseFormManagerProps<T>) => {
-  const { control, handleSubmit, watch, getValues, formState, trigger } =
-    formControl;
+  const { control, handleSubmit, watch, formState, trigger } = formControl;
   const errorsCacheRef = useRef<FieldErrors<T>>(formState.errors);
   const errors = useMemo(() => {
     const next = formState.errors;
@@ -136,23 +133,26 @@ export const useFormManager = <T extends FieldValues = FieldValues>({
     [showNotification]
   );
 
-const filterFormData = useCallback(
-  <S extends Submit<T, SubmitKeysArg<T>>>(values: T, submitConfig: S): PayloadOf<T, S> => {
-    const keys = submitConfig.values as ReadonlyArray<keyof T> | undefined;
-    if (!keys || keys.length === 0) {
-      return values as PayloadOf<T, S>;
-    }
-
-    const out = {} as Record<keyof T, T[keyof T]>;
-    for (const key of keys) {
-      if (key in values) {
-        out[key] = values[key];
+  const filterFormData = useCallback(
+    <S extends Submit<T, SubmitKeysArg<T>>>(
+      values: T,
+      submitConfig: S
+    ): PayloadOf<T, S> => {
+      const keys = submitConfig.values as ReadonlyArray<keyof T> | undefined;
+      if (!keys || keys.length === 0) {
+        return values as PayloadOf<T, S>;
       }
-    }
-    return out as PayloadOf<T, S>;
-  },
-  []
-);
+
+      const out = {} as Record<keyof T, T[keyof T]>;
+      for (const key of keys) {
+        if (key in values) {
+          out[key] = values[key];
+        }
+      }
+      return out as PayloadOf<T, S>;
+    },
+    []
+  );
 
   const processSubmit = useCallback(
     async <S extends Submit<T, SubmitKeysArg<T>>>(data: T, submitConfig: S) => {
@@ -166,7 +166,10 @@ const filterFormData = useCallback(
   );
 
   const handleError = useCallback(
-    <S extends Submit<T, SubmitKeysArg<T>>>(error: unknown, submitConfig: S) => {
+    <S extends Submit<T, SubmitKeysArg<T>>>(
+      error: unknown,
+      submitConfig: S
+    ) => {
       if (submitConfig.onError) {
         submitConfig.onError(error as Error);
       }
@@ -237,7 +240,13 @@ const filterFormData = useCallback(
         key: `submit-${index}`,
         type: "submit",
       }) || <></>,
-    [createSubmitHandler, handleSubmit, onInvalidHandle, trigger, formState.errors]
+    [
+      createSubmitHandler,
+      handleSubmit,
+      onInvalidHandle,
+      trigger,
+      formState.errors,
+    ]
   );
 
   const values = watch();
