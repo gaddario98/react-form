@@ -1,6 +1,6 @@
 {
   "name": "@gaddario98/react-form",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -24,7 +24,7 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@gaddario98/react-state": "^2.0.0",
+    "@gaddario98/react-state": "^2.0.1",
     "@tanstack/react-form": "^1.27.7"
   },
   "peerDependencies": {
