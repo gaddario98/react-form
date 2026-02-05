@@ -24,8 +24,8 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@tanstack/react-form": "^1.27.7",
-    "@gaddario98/react-state": "^2.0.0"
+    "@gaddario98/react-state": "^2.0.0",
+    "@tanstack/react-form": "^1.27.7"
   },
   "peerDependencies": {
     "react": ">=18.0.0 <20.0.0"
@@ -42,12 +42,6 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.js",
       "default": "./dist/index.js"
-    },
-    "./lib": {
-      "types": "./dist/lib/index.d.ts",
-      "import": "./dist/lib/index.mjs",
-      "require": "./dist/lib/index.js",
-      "default": "./dist/lib/index.js"
     }
   },
   "repository": {

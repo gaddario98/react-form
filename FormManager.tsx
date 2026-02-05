@@ -27,7 +27,7 @@ export const FormManager = <T extends Record<string, any> = FieldValues>({
     onValuesChange,
     id,
     formOptions: {
-      values: defaultValues,
+      defaultValues: defaultValues,
       ...formSettings,
       formId: id,
     },
