@@ -1,11 +1,12 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react'
-import { FormField } from '../FormField'
-import { useSetFormState } from '../atoms'
-import { useFormConfigValue } from '../config'
-import { useFormValues } from './useFormValues'
-import { useJotaiForm } from './useJotaiForm'
-import type { FormNotificationMessage } from '../config'
-import type { DeepKeys, DeepValue, Updater } from '@tanstack/react-form'
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import { FormField } from "../FormField";
+import { useSetFormState } from "../atoms";
+import { useFormConfigValue } from "../config";
+import { useFormValues } from "./useFormValues";
+import { useJotaiForm } from "./useJotaiForm";
+import { useStore } from "@tanstack/react-store";
+import type { FormNotificationMessage } from "../config";
+import type { DeepKeys, DeepValue, Updater } from "@tanstack/react-form";
 import type {
   FieldValues,
   FormFieldConfig,
@@ -19,43 +20,43 @@ import type {
   SubmitKeysArg,
   SubmitPayload,
   UseFormManagerProps,
-} from '../types'
-import type { JSX } from 'react'
+} from "../types";
+import type { JSX } from "react";
 
 export interface FormElements {
-  index: number
-  element: JSX.Element
-  renderInFooter: boolean
-  renderInHeader: boolean
-  isSubmit?: boolean
+  index: number;
+  element: JSX.Element;
+  renderInFooter: boolean;
+  renderInHeader: boolean;
+  isSubmit?: boolean;
 }
 
 type PayloadOf<
   F extends FieldValues,
   S extends Submit<F, SubmitKeysArg<F>>,
-> = SubmitPayload<F, S extends Submit<F, infer K> ? K : undefined>
+> = SubmitPayload<F, S extends Submit<F, infer K> ? K : undefined>;
 
 const trimObject = <T extends object>(obj?: T): T =>
   Object.entries(obj ?? {}).reduce(
     (prev, [key, val]) => ({
       ...prev,
       [key]:
-        typeof val === 'string' && !['password', 'pPassword'].includes(key)
+        typeof val === "string" && !["password", "pPassword"].includes(key)
           ? val.trim()
           : val,
     }),
     {} as T,
-  )
+  );
 const RenderField = <F extends FieldValues = FieldValues>({
   field,
   fieldState,
   fieldProps,
   onFieldChange,
 }: {
-  field: GenericFieldApi<F>
-  fieldState: GenericFieldState<F>
-  fieldProps: FormManagerConfig<F>
-  onFieldChange?: (value: F) => void
+  field: GenericFieldApi<F>;
+  fieldState: GenericFieldState<F>;
+  fieldProps: FormManagerConfig<F>;
+  onFieldChange?: (value: F) => void;
 }) => {
   const config: FormFieldConfig<F> = useMemo(
     () => ({
@@ -64,7 +65,7 @@ const RenderField = <F extends FieldValues = FieldValues>({
       fieldState,
     }),
     [fieldProps, field, fieldState],
-  )
+  );
   return (
     <FormField<F>
       config={config}
@@ -72,8 +73,8 @@ const RenderField = <F extends FieldValues = FieldValues>({
       globalErrorNs={fieldProps.errorNs}
       onFieldChange={onFieldChange}
     />
-  )
-}
+  );
+};
 
 const DynamicFieldItem = <F extends FieldValues>({
   item,
@@ -81,50 +82,50 @@ const DynamicFieldItem = <F extends FieldValues>({
   globalErrorNs,
   formId,
 }: {
-  item: FormManagerProps<F>['data'][number]
-  form: GenericFormApi<F>
-  globalErrorNs?: string
-  formId: string
+  item: FormManagerProps<F>["data"][number];
+  form: GenericFormApi<F>;
+  globalErrorNs?: string;
+  formId: string;
 }) => {
-  const { get, set } = useFormValues<F>({ formId })
+  const { get, set } = useFormValues<F>({ formId });
 
   const fieldProps = useMemo(() => {
-    if (typeof item === 'function') {
-      return item({ get, set })
+    if (typeof item === "function") {
+      return item({ get, set });
     } else {
-      return item
+      return item;
     }
-  }, [get, set, item])
+  }, [get, set, item]);
 
   const isHidden = useMemo(() => {
     if (!fieldProps.hidden) {
-      return false
-    } else if (typeof fieldProps.hidden === 'function') {
-      return fieldProps.hidden({ get, set })
+      return false;
+    } else if (typeof fieldProps.hidden === "function") {
+      return fieldProps.hidden({ get, set });
     } else {
-      return !!fieldProps.hidden
+      return !!fieldProps.hidden;
     }
-  }, [get, set, fieldProps])
+  }, [get, set, fieldProps]);
 
   const rules = useMemo(() => {
     if (!fieldProps.rules) {
-      return undefined
-    } else if (typeof fieldProps.rules === 'function') {
-      return fieldProps.rules({ get, set })
+      return undefined;
+    } else if (typeof fieldProps.rules === "function") {
+      return fieldProps.rules({ get, set });
     } else {
-      return fieldProps.rules
+      return fieldProps.rules;
     }
-  }, [get, set, fieldProps])
+  }, [get, set, fieldProps]);
 
   const props = useMemo(() => {
     return {
       ...fieldProps,
       errorNs: fieldProps.errorNs ?? globalErrorNs,
-    }
-  }, [fieldProps, globalErrorNs])
+    };
+  }, [fieldProps, globalErrorNs]);
 
   if (isHidden) {
-    return <></>
+    return <></>;
   }
 
   return (
@@ -141,74 +142,76 @@ const DynamicFieldItem = <F extends FieldValues>({
         />
       )}
     />
-  )
-}
+  );
+};
 
 const SubmitItem = <F extends FieldValues>({
   item,
   index,
   handlersRef,
 }: {
-  item: Submit<F>
-  index: number
+  item: Submit<F>;
+  index: number;
   handlersRef: React.MutableRefObject<{
-    formControl: GenericFormApi<F>
-    onInvalidHandle: (err: unknown, submitConfig: Submit<F>) => void
+    formControl: GenericFormApi<F>;
+    onInvalidHandle: (err: unknown, submitConfig: Submit<F>) => void;
     createSubmitHandler: (
       submitConfig: Submit<F>,
-    ) => (data: F) => Promise<unknown>
-  }>
+    ) => (data: F) => Promise<unknown>;
+    values: F;
+    errors: unknown;
+  }>;
 }) => {
   const handleClick = useCallback(async () => {
     const { formControl, createSubmitHandler, onInvalidHandle } =
-      handlersRef.current
+      handlersRef.current;
 
     // Partial or full validation logic
-    let isValid = true
+    let isValid = true;
 
-    const keys = item.values as ReadonlyArray<string> | undefined
+    const keys = item.values as ReadonlyArray<string> | undefined;
     if (keys && keys.length > 0) {
       // Validate only specific fields
       await Promise.all(
-        keys.map((key) => formControl.validateField(key, 'change')),
-      )
+        keys.map((key) => formControl.validateField(key, "change")),
+      );
       const hasError = keys.some((key) => {
         // This is a simplified check. TanStack form errors might be structured differently.
         // You might need deep checking if errors are nested objects.
         // For now assume flat or use lodash get if possible, but state.errors is usually flat-ish map in newer versions or object.
         // Checking standard TanStack: form.state.fieldMeta[key]?.errors
-        const meta = formControl.getFieldMeta(key)
-        return meta?.errors && meta.errors.length > 0
-      })
-      isValid = !hasError
+        const meta = formControl.getFieldMeta(key);
+        return meta?.errors && meta.errors.length > 0;
+      });
+      isValid = !hasError;
     } else {
       // Validate all
-      await formControl.validateAllFields('submit')
-      isValid = formControl.state.isValid
+      await formControl.validateAllFields("submit");
+      isValid = formControl.state.isValid;
     }
 
     if (!isValid) {
-      onInvalidHandle(formControl.state.errors, item)
-      return
+      onInvalidHandle(handlersRef.current.errors, item);
+      return;
     }
 
-    const values = formControl.state.values
+    const values = handlersRef.current.values;
     // Call handlers
-    await createSubmitHandler(item)(values)
-  }, [item, handlersRef])
+    await createSubmitHandler(item)(values);
+  }, [item, handlersRef]);
 
-  const Component = useMemo(() => item.component, [item])
-  if (item.hidden || !Component) return <></>
+  const Component = useMemo(() => item.component, [item]);
+  if (item.hidden || !Component) return <></>;
 
   return (
     <Component
       onClick={handleClick}
       index={index}
       key={`submit-${index}`}
-      type={item.type || 'button'}
+      type={item.type || "button"}
     />
-  )
-}
+  );
+};
 
 export const useFormManager = <F extends FieldValues = FieldValues>({
   data,
@@ -218,14 +221,13 @@ export const useFormManager = <F extends FieldValues = FieldValues>({
   formOptions,
   onValuesChange,
   globalErrorNs,
-  id = 'form-manager',
+  id = "form-manager",
 }: UseFormManagerProps<F>) => {
-  const formControl = useJotaiForm<F>(formOptions)
-  const formState = useMemo(() => formControl.state, [formControl.state])
-  const errors = useMemo(() => formState.errors, [formState.errors])
-  const values = useMemo(() => formState.values, [formState.values])
-  const setFormState = useSetFormState<F>(id)
-  const { showNotification } = useFormConfigValue()
+  const formControl = useJotaiForm<F>(formOptions);
+  const errors = useStore(formControl.store, (state) => state.errors);
+  const values = useStore(formControl.store, (state) => state.values);
+  const setFormState = useSetFormState<F>(id);
+  const { showNotification } = useFormConfigValue();
 
   const setValue = useCallback(
     <TField extends DeepKeys<F>>(
@@ -233,64 +235,55 @@ export const useFormManager = <F extends FieldValues = FieldValues>({
       updater: Updater<DeepValue<F, TField>>,
     ) => formControl.setFieldValue(field, updater),
     [formControl],
-  ) as SetValueFunction<F>
+  ) as SetValueFunction<F>;
 
   useEffect(() => {
     setFormState({
       setValue,
-      formValues: formState.values,
-    })
-    const unsubscribe = formControl.store.subscribe((store) => {
-      setFormState({
-        formValues: store.currentVal.values,
-      })
-    })
-
-    return () => {
-      unsubscribe()
-    } /**/
-  }, [formControl.store, setValue, formState.values, setFormState])
+      formValues: values,
+    });
+  }, [setFormState, setValue, values]);
 
   const handleNotification = useCallback(
     (props: FormNotificationMessage) => {
       if (props.message) {
-        showNotification?.(props)
+        showNotification?.(props);
       }
     },
     [showNotification],
-  )
+  );
 
   const filterFormData = useCallback(
     <S extends Submit<F, SubmitKeysArg<F>>>(
       v: F,
       submitConfig: S,
     ): PayloadOf<F, S> => {
-      const keys = submitConfig.values as ReadonlyArray<keyof F> | undefined
+      const keys = submitConfig.values as ReadonlyArray<keyof F> | undefined;
       if (!keys || keys.length === 0) {
-        return v as PayloadOf<F, S>
+        return v as PayloadOf<F, S>;
       }
 
-      const out = {} as Record<keyof F, F[keyof F]>
+      const out = {} as Record<keyof F, F[keyof F]>;
       for (const key of keys) {
         if (key in v) {
-          out[key] = v[key]
+          out[key] = v[key];
         }
       }
-      return out as PayloadOf<F, S>
+      return out as PayloadOf<F, S>;
     },
     [],
-  )
+  );
 
   const processSubmit = useCallback(
     async <S extends Submit<F, SubmitKeysArg<F>>>(d: F, submitConfig: S) => {
-      const filteredData = filterFormData(d, submitConfig)
+      const filteredData = filterFormData(d, submitConfig);
       if (submitConfig.onSuccess) {
-        return await submitConfig.onSuccess(filteredData)
+        return await submitConfig.onSuccess(filteredData);
       }
-      throw new Error('No submit handler provided')
+      throw new Error("No submit handler provided");
     },
     [filterFormData],
-  )
+  );
 
   const handleError = useCallback(
     <S extends Submit<F, SubmitKeysArg<F>>>(
@@ -298,18 +291,18 @@ export const useFormManager = <F extends FieldValues = FieldValues>({
       submitConfig: S,
     ) => {
       if (submitConfig.onError) {
-        submitConfig.onError(error as Error)
+        submitConfig.onError(error as Error);
       }
       const notificationProps =
-        typeof notification?.error === 'function'
+        typeof notification?.error === "function"
           ? notification.error((error as Error).message)
-          : notification?.error
+          : notification?.error;
       if (notificationProps?.message) {
-        handleNotification(notificationProps)
+        handleNotification(notificationProps);
       }
     },
     [handleNotification, notification],
-  )
+  );
 
   const createSubmitHandler = useCallback(
     <S extends Submit<F, SubmitKeysArg<F>>>(submitConfig: S) =>
@@ -318,30 +311,30 @@ export const useFormManager = <F extends FieldValues = FieldValues>({
           const res = await processSubmit(
             trimObject<F>(dataSubmit),
             submitConfig,
-          )
+          );
           const notificationProps =
-            typeof notification?.success === 'function'
+            typeof notification?.success === "function"
               ? notification.success(res)
-              : notification?.success
+              : notification?.success;
           if (notificationProps?.message) {
-            handleNotification(notificationProps)
+            handleNotification(notificationProps);
           }
-          return res
+          return res;
         } catch (error) {
-          handleError(error, submitConfig)
-          throw error
+          handleError(error, submitConfig);
+          throw error;
         }
       },
     [processSubmit, notification, handleNotification, handleError],
-  )
+  );
 
   const onInvalidHandle = useCallback(
     (err: unknown, submitConfig: Submit<F>) => {
-      onInvalid?.(err)
-      handleError(new Error('invalidData'), submitConfig)
+      onInvalid?.(err);
+      handleError(new Error("invalidData"), submitConfig);
     },
     [handleError, onInvalid],
-  )
+  );
 
   const handlersRef = useRef({
     formControl,
@@ -350,20 +343,27 @@ export const useFormManager = <F extends FieldValues = FieldValues>({
     setValue: formControl.setFieldValue,
     trigger: formControl.validateField,
     onValuesChange,
-  })
+    values,
+    errors,
+  });
 
   useEffect(() => {
-    handlersRef.current.onInvalidHandle = onInvalidHandle
-    handlersRef.current.createSubmitHandler = createSubmitHandler
-    handlersRef.current.setValue = formControl.setFieldValue
-    handlersRef.current.trigger = formControl.validateField
-    handlersRef.current.onValuesChange = onValuesChange
-  }, [onInvalidHandle, createSubmitHandler, formControl, onValuesChange])
+    handlersRef.current.onInvalidHandle = onInvalidHandle;
+    handlersRef.current.createSubmitHandler = createSubmitHandler;
+    handlersRef.current.setValue = formControl.setFieldValue;
+    handlersRef.current.trigger = formControl.validateField;
+    handlersRef.current.onValuesChange = onValuesChange;
+  }, [onInvalidHandle, createSubmitHandler, formControl, onValuesChange]);
+
+  useEffect(() => {
+    handlersRef.current.values = values;
+    handlersRef.current.errors = errors;
+  }, [values, errors]);
 
   const fields = useMemo(
     () =>
       data.map((item, index): FormElements => {
-        const staticItem = typeof item === 'function' ? null : item
+        const staticItem = typeof item === "function" ? null : item;
         return {
           index: staticItem?.index ?? index,
           element: (
@@ -377,10 +377,10 @@ export const useFormManager = <F extends FieldValues = FieldValues>({
           ),
           renderInFooter: !!staticItem?.renderInFooter,
           renderInHeader: !!staticItem?.renderInHeader,
-        }
+        };
       }),
     [data, formControl, globalErrorNs, id],
-  )
+  );
 
   const submits = useMemo(
     () =>
@@ -398,21 +398,21 @@ export const useFormManager = <F extends FieldValues = FieldValues>({
           renderInFooter: !!submitConfig.renderInFooter,
           renderInHeader: !!submitConfig.renderInHeader,
           isSubmit: true,
-        }
+        };
       }),
     [submit],
-  )
+  );
 
   const elements = useMemo(
     (): Array<FormElements> => fields.concat(submits),
     [fields, submits],
-  )
+  );
 
-  const formContents = useMemo(() => [...data, ...submit], [data, submit])
+  const formContents = useMemo(() => [...data, ...submit], [data, submit]);
 
   useEffect(() => {
-    handlersRef.current.onValuesChange?.(values, handlersRef.current.setValue)
-  }, [values])
+    handlersRef.current.onValuesChange?.(values, handlersRef.current.setValue);
+  }, [values]);
 
   return {
     elements,
@@ -420,5 +420,5 @@ export const useFormManager = <F extends FieldValues = FieldValues>({
     errors,
     formValues: values,
     setValue,
-  }
-}
+  };
+};

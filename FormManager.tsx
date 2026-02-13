@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useFormManager } from "./hooks";
 import { DefaultContainer, DefaultFormContainer } from "./containers";
 import type { FieldValues, FormManagerProps } from "./types";
+import { useFormConfigValue } from "./config";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const FormManager = <T extends Record<string, any> = FieldValues>({
@@ -50,10 +51,14 @@ export const FormManager = <T extends Record<string, any> = FieldValues>({
         .map((el) => el.element),
     [elements],
   );
+  const { container, bodyContainer, submitContainer } = useFormConfigValue();
 
-  const Container = viewSettings?.container || DefaultFormContainer<T>;
-  const BodyContainer = viewSettings?.bodyContainer || DefaultContainer;
-  const SubmitContainer = viewSettings?.submitContainer || DefaultContainer;
+  const Container =
+    viewSettings?.container || container || DefaultFormContainer<T>;
+  const BodyContainer =
+    viewSettings?.bodyContainer || bodyContainer || DefaultContainer;
+  const SubmitContainer =
+    viewSettings?.submitContainer || submitContainer || DefaultContainer;
 
   return (
     <Container {...(viewSettings?.containerProps || {})}>
