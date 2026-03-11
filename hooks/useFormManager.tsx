@@ -4,9 +4,13 @@ import { useSetFormState } from "../atoms";
 import { useFormConfigValue } from "../config";
 import { useFormValues } from "./useFormValues";
 import { useJotaiForm } from "./useJotaiForm";
-import { useStore } from "@tanstack/react-store";
 import type { FormNotificationMessage } from "../config";
-import type { DeepKeys, DeepValue, Updater } from "@tanstack/react-form";
+import {
+  useStore,
+  type DeepKeys,
+  type DeepValue,
+  type Updater,
+} from "@tanstack/react-form";
 import type {
   FieldValues,
   FormFieldConfig,
