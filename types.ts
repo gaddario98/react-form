@@ -139,6 +139,11 @@ export interface ViewSettingsContainerProps {
   children: React.ReactNode;
 }
 
+export type OnValuesChangeProps<T extends FieldValues> = (
+  props: T,
+  setValue: (name: any, value: any) => void,
+) => void;
+
 export type FormManagerProps<T extends FieldValues = FieldValues> = {
   data: Array<
     | FormManagerConfig<T>
@@ -159,10 +164,7 @@ export type FormManagerProps<T extends FieldValues = FieldValues> = {
       | ((error: string) => FormNotificationMessage);
     ns?: string;
   };
-  onValuesChange?: (
-    props: T,
-    setValue: (name: any, value: any) => void,
-  ) => void;
+  onValuesChange?: OnValuesChangeProps<T>;
   formSettings?: UseCustomFormOptions<T>;
   isDraggable?: boolean;
   isInDraggableView?: boolean;
@@ -197,11 +199,7 @@ export type UseFormManagerProps<T extends FieldValues> = {
       | ((error: string) => FormNotificationMessage);
     ns?: string;
   };
-  onValuesChange?: (
-    props: T,
-    setValue: (name: any, value: any) => void,
-  ) => void;
-  id?: string;
+  onValuesChange?: OnValuesChangeProps<T>;
 };
 
 export interface FieldComponentProps<T extends FieldValues> {
