@@ -200,6 +200,7 @@ export type UseFormManagerProps<T extends FieldValues> = {
     ns?: string;
   };
   onValuesChange?: OnValuesChangeProps<T>;
+  id?: string;
 };
 
 export interface FieldComponentProps<T extends FieldValues> {
