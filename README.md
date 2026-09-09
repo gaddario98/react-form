@@ -1,6 +1,6 @@
 # @gaddario98/react-form
 
-An advanced React library for managing dynamic and type-safe forms, built on **TanStack React Form** with full support for TypeScript, internationalization, Jotai state management, and notifications.
+An advanced React library for managing dynamic and type-safe forms, built on top of **TanStack React Form**. It provides full support for TypeScript, internationalization, Jotai state management, and notifications.
 
 ## ✨ Features
 
@@ -9,18 +9,22 @@ An advanced React library for managing dynamic and type-safe forms, built on **T
 - 🌍 **i18n Ready**: Native integration with translation options for internationalization.
 - 🔔 **Notifications**: Built-in generic notification system for standard success and error handling.
 - 🎨 **Customizable**: Fully customizable containers, dynamic fields, and conditional rendering.
-- � **Jotai Integration**: Exposes form state effectively using internally managed state atoms via `@gaddario98/react-state`.
-- � **Flexible Layouts**: Includes structural injection arrays to render fields in custom views, dialogs, etc.
+- ⚛️ **Jotai Integration**: Exposes form state efficiently using internally managed state atoms via `@gaddario98/react-state`.
+- 🧩 **Flexible Layouts**: Includes structural injection arrays to render fields in custom views, dialogs, etc.
 
 ## 📦 Installation
 
+To install the library, you can use npm or yarn:
+
 ```bash
-yarn workspace @gaddario98/react-form install @tanstack/react-form @gaddario98/react-state react
+npm install @gaddario98/react-form @tanstack/react-form @gaddario98/react-state
+# or
+yarn add @gaddario98/react-form @tanstack/react-form @gaddario98/react-state
 ```
 
 ### Peer Dependencies
 
-Make sure you have `react` installed.
+Make sure you have `react` installed (>=18.0.0).
 
 ## 🚀 Quick Start
 
@@ -107,6 +111,7 @@ export type FormManagerProps<T extends FieldValues> = {
   >;
   defaultValues: T;
   onInvalid?: (err: unknown) => void;
+  isHiddenErrors?: boolean;
   submit?: Array<Submit<T>>;
   notification?: {
     success?:
@@ -123,9 +128,9 @@ export type FormManagerProps<T extends FieldValues> = {
   ) => void;
   formSettings?: UseCustomFormOptions<T>;
   viewSettings?: {
-    container?: React.ComponentType;
-    submitContainer?: React.ComponentType;
-    bodyContainer?: React.ComponentType;
+    container?: React.ComponentType<{ children: React.ReactNode }>;
+    submitContainer?: React.ComponentType<{ children: React.ReactNode }>;
+    bodyContainer?: React.ComponentType<{ children: React.ReactNode }>;
     containerProps?: Record<string, unknown>;
     // ...
   };
@@ -135,7 +140,7 @@ export type FormManagerProps<T extends FieldValues> = {
 
 ### Dynamic Fields configuration (`data`)
 
-Elements in the `data` array shape the visual layout and validation of the fields. They can be standard objects or factory functions granting you access to current form values `get()` and setters `set()`.
+Elements in the `data` array shape the visual layout and validation of the fields. They can be standard objects or factory functions granting you access to current form values via `get()` and setters via `set()`.
 
 ```tsx
 data: [
