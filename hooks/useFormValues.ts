@@ -83,7 +83,7 @@ export const useFormValues = <F extends FieldValues>({
       subscriptions.current.set(key, val);
       return subscriptions.current.get(key);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     [trigger],
   ) as GetFormValuesFunction<F>;
 

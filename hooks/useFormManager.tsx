@@ -225,8 +225,9 @@ export const useFormManager = <F extends FieldValues = FieldValues>({
   formOptions,
   onValuesChange,
   globalErrorNs,
-  id = "form-manager",
+  id: explicitId,
 }: UseFormManagerProps<F>) => {
+  const id = explicitId ?? formOptions?.formId ?? "form-manager";
   const formControl = useJotaiForm<F>(formOptions);
   const errors = useStore(formControl.store, (state) => state.errors);
   const values = useStore(formControl.store, (state) => state.values);
