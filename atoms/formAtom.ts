@@ -1,5 +1,4 @@
-import { atom, useAtom, useAtomValue, useSetAtom } from 'jotai'
-import { selectAtom } from 'jotai/utils'
+import { atom, useAtom, useAtomValue, useSetAtom, selectAtom } from '@gaddario98/react-state'
 import { useCallback, useMemo } from 'react'
 import type { FieldValues, SetValueFunction } from '../types'
 
